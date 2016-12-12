@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>搜索</title>
+	<link rel="stylesheet" href="//g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+	<style>
+		ul {
+			list-style: none;
+		}
+		.content ul{
+			border-bottom:1px solid #ccc;
+			background: #fff;
+		}
+		.gray {
+			background: #ccc;
+		}
+		li:hover {
+			background: #ccc;
+		}
+	</style>
+</head>
+<body>
+	<div class="page-group" id="app">
+        <div class="page">
+            <header class="bar bar-nav">
+			  	<h1 class='title'>搜索栏</h1>
+			</header>
+			<div class="bar bar-header-secondary">
+			  	<div class="searchbar">
+			    	<a class="searchbar-cancel">取消</a>
+			    	<div class="search-input">
+			      		<label class="icon icon-search" for="search"></label>
+			      		<input type="search" id='search' placeholder='输入关键字...' v-model="info" @keyup="get($event)" @keydown.down="changeDown()" @keydown.up.prevent="changeUp()" @blur="none()"/>
+			    	</div>
+			 	</div>
+			</div>
+			<div class="content">
+			    <ul v-show="message.length!=0">
+			    	<li v-for="(value,index) in message" :class="{gray:index == nowIndex}" @click="goUrl(index)">{{value}}</li>
+			    </ul>
+			</div>
+    	</div>
+    </div>
+    <script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+	<script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+	<script src="lib/vue.js"></script>
+	<script src="lib/vue-resource.js"></script>
+	<script>
+		new Vue({
+			el:'#app',
+			data: {
+				message: [],
+				info: '',
+				nowIndex: -1
+			},
+			methods: {
+				get: function(e) {
+					if(e.keyCode == 38 || e.keyCode == 40) {
+						return;
+					}
+					if(e.keyCode == 13) {
+						window.open("https://www.baidu.com/s?wd=" + this.info);
+					}
+					if(e.keyCode == 8) {
+						this.nowIndex = -1;
+					}
+					this.$http.jsonp('https://sug.so.360.cn/suggest?word=' + this.info + '&encodein=utf-8&encodeout=utf-8').then(function(res) {
+						this.message = res.data.s;
+					},function(res) {
+						alert(res.status);
+					})
+				},
+				changeDown: function() {
+					this.nowIndex++;
+					if(this.nowIndex == this.message.length) {
+						this.nowIndex = 0;
+					}
+					this.info = this.message[this.nowIndex];
+				},
+				changeUp: function() {
+					this.nowIndex--;
+					if(this.nowIndex == -1) {
+						this.nowIndex = this.message.length - 1;
+					}
+					this.info = this.message[this.nowIndex];
+				},
+				goUrl: function(index) {
+					this.info = this.message[index];
+					window.open("https://www.baidu.com/s?wd=" + this.info);
+				},
+				none: function() {
+					setTimeout(()=> {
+		                this.message = '';
+		                this.nowIndex = -1;
+		            },100);
+				},
+			}
+		});
+	</script>
+</body>
+</html>
